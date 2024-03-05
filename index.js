@@ -19,7 +19,7 @@ const db = new pg.Client({
 db.connect();
 
 // fetch book image from PUBLIC API
-function bookImg(isbn) {
+async function bookImg(isbn) {
     // Construct the URL for the image based on the ISBN
     const imgUrl = `https://covers.openlibrary.org/b/isbn/${isbn}-M.jpg`;
     return imgUrl;
@@ -32,7 +32,36 @@ app.get("/", async(req, res) => {
     res.render("index.ejs", { books: data });
 });
 
+app.post("/new", async(req, res)=> {
 
+    res.render("edit.ejs");
+})
+
+//add new post 
+app.post("/add", async(req, res)=> {
+    // retrive data from edit.ejs
+    const first_name = req.body.first_name;
+    const last_name = req.body.last_name;
+    const title = req.body.title;
+    const isbn = req.body.isbn;
+    const brief = req.body.brief;
+    const content = req.body.content;
+    const read_date = req.body.read_date;
+    const my_rating = req.body.my_rating;
+    // get img_url
+    const img_url = await bookImg(isbn);
+    console.log(first_name);
+    console.log(last_name);
+    console.log(title);
+    console.log(isbn);
+    console.log(brief);
+    console.log(content);
+    console.log(read_date);
+    console.log(my_rating);
+    console.log(img_url);
+    //inputting data to db
+
+})
 // listen
 app.listen(port, (req, res)=> {
     console.log(`Server on port ${port}`);
