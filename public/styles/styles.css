@@ -1,0 +1,12 @@
+body{
+    /* background-color: red; */
+}
+
+.svg-white {
+    height: 1em;
+    filter: brightness(0) invert(1);
+}
+/* .card-img-top {
+    height: 10em;
+    width: 10em;
+} */
