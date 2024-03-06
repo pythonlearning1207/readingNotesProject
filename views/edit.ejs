@@ -17,19 +17,19 @@
       
     </div>
 
-    
+    <!-- author's first name -->
       <div class="col-md-7 col-lg-8 mx-auto" style="max-width: 960px;">
         <h4 class="mb-3">Book information</h4>
         <form class="needs-validation" novalidate="" action="/add" method="POST">
           <div class="row g-3">
             <div class="col-sm-6">
               <label for="first_name" class="form-label">Author's First name</label>
-              <input type="text" class="form-control" id="firs_tName" name="first_name" placeholder="" value="">
+              <input type="text" class="form-control" id="first_name" name="first_name" placeholder="" value="">
               <div class="invalid-feedback">
                 Valid first name is required.
               </div>
             </div>
-
+<!-- author's last name -->
             <div class="col-sm-6">
               <label for="lastName" class="form-label">Author's Last name</label>
               <input type="text" class="form-control" id="lastName" name="last_name" placeholder="" value="">
@@ -37,45 +37,50 @@
                 Valid last name is required.
               </div>
             </div>
-
+<!-- book name -->
             <div class="col-12">
               <label for="title" class="form-label">Book name</label>
               <div class="input-group has-validation">
-                
-                <input type="text" class="form-control" id="title" required="" name="title">
+                <input type="text" class="form-control" id="title" required name="title">
                 <div class="invalid-feedback">
-                  Your username is required.
+                  Your book title is required.
                 </div>
               </div>
             </div>
-
+<!-- ISBN -->
             <div class="col-12">
               <label for="isbn" class="form-label">ISBN</label>
-              <input type="number" class="form-control" id="email" placeholder="you@example.com" name="isbn">
+              <input type="text" class="form-control" id="email" name="isbn">
               <div class="invalid-feedback">
-                Please enter a valid email address for shipping updates.
+                isbn is required.
               </div>
             </div>
-
+            <!-- brief -->
             <div class="col-12">
               <label for="brief" class="form-label">Brief</label>
               <textarea rows="4" name="brief" class="form-control" id="address" placeholder="What's this book about?" required=""></textarea>
-            </div>
-
-            <div class="col-12">
-              <label for="content" class="form-label">My Notes <span class="text-body-secondary">(Optional)</span></label>
-              <textarea rows="10" class="form-control" id="address2" name="content"></textarea>
-            </div>
-
-            <div class="col-6">
-              <label for="read_date" class="form-label">When did you read this book?</label>
-        
-              <input type="text" class="form-control" id="read_date" name="read_date" placeholder="YYYY/MM/DD">
               <div class="invalid-feedback">
-                Please use the valid formate
+                brief is required.
               </div>
             </div>
-
+            <!-- notes -->
+            <div class="col-12">
+              <label for="content" class="form-label">My Notes</label>
+              <textarea rows="10" class="form-control" id="address2" name="content" required></textarea>
+              <div class="invalid-feedback">
+                notes are required.
+              </div>
+            </div>
+            <!-- read_date -->
+            <div class="col-6">
+              <label for="read_date" class="form-label">When did you read this book?</label>
+              
+              <input type="date" class="form-control" id="read_date" name="read_date" placeholder="YYYY/MM/DD" required>
+              <div class="invalid-feedback">
+                Please use the valid format
+              </div>
+            </div>
+            <!-- my_rating -->
             <div class="col-6">
               <label for="my_rating" class="form-label">Your rating:</label>
               <select class="form-select" id="my_rating" name="my_rating" required="">
@@ -97,6 +102,7 @@
               </div>
             </div>
           </div>
+          <!-- submit button -->
           <button class="w-100 btn btn-primary btn-lg mt-5 mb-5" type="submit">Submit</button>
         </form>
         
@@ -114,6 +120,25 @@
 </div>
 <script src="/docs/5.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 
-    <script src="checkout.js"></script>
+<script>
+  (function() {
+    'use strict';
+    window.addEventListener('load', function() {
+      var forms = document.getElementsByClassName('needs-validation');
+      var validation = Array.prototype.filter.call(forms, function(form) {
+        form.addEventListener('submit', function(event) {
+          if (form.checkValidity() === false) {
+            event.preventDefault();
+            event.stopPropagation();
+          }
+          form.classList.add('was-validated');
+        }, false);
+      });
+    }, false);
+  })();
+  </script>
+  </body>
+  </html>
+  
 </body>
 </html>
