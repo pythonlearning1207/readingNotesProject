@@ -1,0 +1,19 @@
+.container {
+    max-width: 960px;
+    width: auto;
+    margin-left:auto;
+    margin-right: auto;
+}
+h1 {
+    text-align: center;
+    padding-top: 10px;
+    padding-bottom: 20px;
+}
+.content-warp {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+.footer {
+    margin-top: auto;
+}

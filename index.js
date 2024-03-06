@@ -38,6 +38,60 @@ app.get("/", async(req, res) => {
     res.render("index.ejs", { books: books });
 });
 
+//read-more
+app.post("/read-more", async(req, res)=> {
+    const id = req.body.bookId;
+    console.log(id);
+    try {
+        const result = await db.query("SELECT content FROM note WHERE id=$1;",[id]);
+        const note = result.rows[0].content;    
+        res.render("read.ejs", {note})
+    } catch (error) {
+        console.log(error);
+    }
+})
+    
+// sorting
+app.post("/sort", async(req, res) => {
+    
+    const action = req.body.criteria;
+    console.log(action);
+    if (action === 'title') {
+        const result = await db.query("SELECT * FROM book INNER JOIN author ON book.author_id = author.id INNER JOIN note ON book.note_id = note.id ORDER BY title ASC;");
+        const books = result.rows;
+        books.forEach(book =>{
+            if (book.read_date) {
+                const [year, month, day] = book.read_date.toISOString().split('T')[0].split('-');
+                 book.read_date = `${month}/${day}/${year}`;
+        }
+        })
+        res.render("index.ejs", { books: books });
+    }
+    else if (action === 'newest') {
+        const result = await db.query("SELECT * FROM book INNER JOIN author ON book.author_id = author.id INNER JOIN note ON book.note_id = note.id ORDER BY read_date DESC;");
+        const books = result.rows;
+        books.forEach(book =>{
+            if (book.read_date) {
+                const [year, month, day] = book.read_date.toISOString().split('T')[0].split('-');
+                 book.read_date = `${month}/${day}/${year}`;
+            }
+            })
+            res.render("index.ejs", { books: books });
+    }
+    else if (action === 'best') {
+        const result = await db.query("SELECT * FROM book INNER JOIN author ON book.author_id = author.id INNER JOIN note ON book.note_id = note.id ORDER BY my_rating DESC;");
+        const books = result.rows;
+        books.forEach(book =>{
+            if (book.read_date) {
+                const [year, month, day] = book.read_date.toISOString().split('T')[0].split('-');
+                 book.read_date = `${month}/${day}/${year}`;
+            }
+            })
+            res.render("index.ejs", { books: books });
+    }
+})
+
+
 app.post("/new", async(req, res)=> {
 
     res.render("edit.ejs");

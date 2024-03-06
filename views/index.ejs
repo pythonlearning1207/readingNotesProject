@@ -77,7 +77,7 @@
       </div>
       <div class="navbar navbar-dark bg-dark shadow-sm">
         <div class="container">
-          <a href="#" class="navbar-brand d-flex align-items-center">
+          <a href="/" class="navbar-brand d-flex align-items-center">
             <img src="images/book.svg" alt="a book icon"  class="svg-white">
             <strong>Ray Zhang</strong>
           </a>
@@ -96,9 +96,12 @@
             <h1 class="fw-light">Books I have read</h1>
             <p class="lead text-body-secondary">Tiny summary but detailed notes for each. Use the ISBN number to find it from your local library or anywhere else. This page will constantly update as I read more, so bookmark it if you want to check back in a few months. Sorted with my top recommendations up top. Sort by title, newest, or best.</p>
             <p>
-                <button class="btn btn-secondary rounded-pill px-3" type="button">Title</button>
-                <button class="btn btn-info rounded-pill px-3" type="button">Newest</button>
-                <button class="btn btn-success rounded-pill px-3" type="button">Best</button>
+              <!-- submit different value for sorting -->
+              <form action="/sort" method="post">
+                <button name="criteria" value="title" class="btn btn-secondary rounded-pill px-3" type="submit">Title</button>
+                <button name="criteria" value="newest" class="btn btn-info rounded-pill px-3" type="submit">Newest</button>
+                <button name="criteria" value="best" class="btn btn-success rounded-pill px-3" type="submit">Best</button>
+              </form>
             </p>
           </div>
         </div>
@@ -117,10 +120,14 @@
                         <h5 class="mb-0">RECOMMEND: <%= book.my_rating %></h3>
                         <div class="mb-1 text-body-secondary">Date Read: <%= book.read_date %></div>
                         <p class="card-text mb-auto"><%=book.brief %></p>
-                        <a href="#" class="icon-link gap-1 icon-link-hover stretched-link">
+                        <!-- <a href="#" class="icon-link gap-1 icon-link-hover stretched-link">
                           Read my notes
                           <svg class="bi"><use xlink:href="#chevron-right"></use></svg>
-                        </a>
+                        </a> -->
+                        <form action="/read-more" method="post">
+                          <input type="hidden" name="bookId" value="<%= book.note_id %>">
+                          <button class="btn btn-link rounded-pill px-0" type="submit">Read more</button>
+                        </form>
                       </div>
                       <div class="col-auto d-none d-lg-block">
                         <img src="<%= book.img_url %>" class="card-img-top" alt="Book Cover">
