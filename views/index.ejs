@@ -2,24 +2,46 @@
 <html lang="en">
 <%- include('header') %>
   <main>
-    
-    <section class="py-5 text-center container">
-      <div class="row py-lg-5">
-        <div class="col-lg-6 col-md-8 mx-auto">
-          <h1 class="fw-light">Books I have read</h1>
-          <p class="lead text-body-secondary">Tiny summary but detailed notes for each. Use the ISBN number to find it from your local library or anywhere else. This page will constantly update as I read more, so bookmark it if you want to check back in a few months. Sorted with my top recommendations up top. Sort by title, newest, or best.</p>
-          <p>
-            <!-- submit different value for sorting -->
+    <!-- if not logged in -->
+    <% if (!isAuthenticated) {%>
+      <section class="py-5 text-center container">
+        <div class="row py-lg-5">
+          <div class="col-lg-6 col-md-8 mx-auto">
+            <h1 class="fw-light">Books I have read</h1>
+            <p class="lead text-body-secondary">Tiny summary but detailed notes for each. Use the ISBN number to find it from your local library or anywhere else. This page will constantly update as I read more, so bookmark it if you want to check back in a few months. Sorted with my top recommendations up top. Sort by title, newest, or best.</p>
+            <p>
+              <!-- submit different value for sorting -->
+              <form action="/sort" method="post">
+                <button name="criteria" value="title" class="btn btn-secondary rounded-pill px-3" type="submit">Title</button>
+                <button name="criteria" value="newest" class="btn btn-info rounded-pill px-3" type="submit">Newest</button>
+                <button name="criteria" value="best" class="btn btn-success rounded-pill px-3" type="submit">Best</button>
+              </form>
+            </p>
+          </div>
+        </div>
+      </section>
+    <%} else {%>
+      <!-- if logged in -->
+      <section class="py-5 text-center container">
+        <div class="row py-lg-5">
+          <div class="col-lg-6 col-md-8 mx-auto">
+            <h1 class="fw-light">Books I have read</h1>
+            <p class="lead text-body-secondary">Tiny summary but detailed notes for each. Use the ISBN number to find it from your local library or anywhere else. This page will constantly update as I read more, so bookmark it if you want to check back in a few months. Sorted with my top recommendations up top. Sort by title, newest, or best.</p>
             <form action="/sort" method="post">
               <button name="criteria" value="title" class="btn btn-secondary rounded-pill px-3" type="submit">Title</button>
               <button name="criteria" value="newest" class="btn btn-info rounded-pill px-3" type="submit">Newest</button>
               <button name="criteria" value="best" class="btn btn-success rounded-pill px-3" type="submit">Best</button>
             </form>
-          </p>
+            <form action="/edit" method="get" class="newpost-button">
+              <button class="btn btn-primary rounded-pill px-4 py-2 mt-3" type="submit">New Post</button>
+            </form>
+          </div>
         </div>
-      </div>
-    </section>
+    <%} %>
     
+    
+    
+
     <div class="album py-5 bg-body-tertiary">
       <div class="container">
       <!-- Start from here -->

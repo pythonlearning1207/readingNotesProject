@@ -1,12 +1,23 @@
-body{
-    /* background-color: red; */
-}
-
 .svg-white {
     height: 1em;
     filter: brightness(0) invert(1);
 }
-/* .card-img-top {
-    height: 10em;
-    width: 10em;
-} */
+
+.row {
+    display: flex;
+    flex-wrap: wrap;
+  }
+  
+  .row .col-md-6 {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .row .col-md-6 .border {
+    flex: 1;
+  }
+  
+  .newpost-button {
+    display: flex;
+    justify-content: center;
+  }

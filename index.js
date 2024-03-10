@@ -2,19 +2,39 @@ import express from "express";
 import bodyParser from "body-parser";
 import pg from "pg";
 import axios from "axios";
+import session from "express-session";
+import passport from "passport";
+import env from "dotenv";
+import bcrypt from "bcrypt";
+import { Strategy } from "passport-local";
+import GoogleStrategy from "passport-google-oauth2";
 
 const app = express();
 const port = 3000;
+const saltRounds = 10;
 app.use(express.static("public"));
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({extended: true}));
+env.config();
+app.use(
+    session({
+        secret: process.env.SESSION_SECRET,
+        resave: false,
+        saveUninitialized: true,
+        cookie:{
+            maxAge: 1000*60*60,
+        }
+    })
+)
+app.use(passport.initialize());
+app.use(passport.session());
 //connect to pgAdmin4
 const db = new pg.Client({
-    user:'postgres',
-    host:'localhost',
-    database:'books',
-    password:'Jia3202128',
-    port:5432,
+    user: process.env.PG_USER,
+    host: process.env.PG_HOST,
+    database: process.env.PG_DATABASE,
+    password: process.env.PG_PASSWORD,
+    port: process.env.PG_PORT,
 })
 db.connect();
 
@@ -35,7 +55,10 @@ app.get("/", async(req, res) => {
             book.read_date = `${month}/${day}/${year}`;
         }
     })
-    res.render("index.ejs", { books: books });
+    res.render("index.ejs", { 
+        books: books,
+        isAuthenticated: req.isAuthenticated()
+    });
 });
 
 //read-more
@@ -45,11 +68,97 @@ app.post("/read-more", async(req, res)=> {
     try {
         const result = await db.query("SELECT content FROM note WHERE id=$1;",[id]);
         const note = result.rows[0].content;    
-        res.render("read.ejs", {note})
+        res.render("read.ejs", {note, isAuthenticated: req.isAuthenticated()})
     } catch (error) {
         console.log(error);
     }
 })
+//login GET
+app.get("/login", (req, res) => {
+    if (req.isAuthenticated()) {
+        res.redirect("/edit");
+    } else {
+        res.render("login.ejs");
+    }
+    
+})
+
+//login POST
+app.post("/login",
+        passport.authenticate("local", {
+            successRedirect: "/",
+            failureRedirect: "/login",
+        })
+);
+
+// Sign in with google
+app.get("/auth/google",
+    passport.authenticate('google',{scope:
+        ['email', 'profile']
+        }
+    )
+);
+
+app.get("/auth/google/callback",
+        passport.authenticate('google', {
+            successRedirect: "/",
+            failureRedirect: "/login",
+        })
+)
+
+
+// log out
+app.post("/logout", (req, res)=> {
+    req.logout(function (err) {
+        if (err) {
+            return next(err);
+        }
+        res.redirect("/");
+    })
+})
+//register GET
+app.get("/register", (req, res) => {
+    res.render("register.ejs");
+})
+
+//register POST
+app.post("/register", async(req, res)=> {
+    const email = req.body.email;
+    const password = req.body.password;
+    try {
+        const result = await db.query("SELECT * FROM users WHERE email=$1", [email]);
+        if (result.rows.length > 0) {
+            console.log("User already exists.");
+        } else {
+            bcrypt.hash(password, saltRounds, async(err, hash)=> {
+                if (err) {
+                    console.log("Error hashing password: " + err);
+                } else {
+                    const insertResult = await db.query("INSERT INTO users(email, password) VALUES($1, $2) RETURNING *",[email, hash]);
+                    const user = insertResult.rows[0];
+                    req.login(user, (err)=>{
+                        console.log(err);
+                        res.redirect("/edit");
+                    })
+                }
+            })
+        }
+    } catch (error) {
+        console.log(error);
+    }
+})
+    
+//GET edit.ejs
+app.get("/edit", (req, res) => {
+    if (req.isAuthenticated()) {
+        res.render("edit.ejs", {
+            isAuthenticated: req.isAuthenticated(),
+        });
+    } else {
+        res.redirect("/login");
+    }
+}
+)
     
 // sorting
 app.post("/sort", async(req, res) => {
@@ -65,7 +174,9 @@ app.post("/sort", async(req, res) => {
                  book.read_date = `${month}/${day}/${year}`;
         }
         })
-        res.render("index.ejs", { books: books });
+        res.render("index.ejs", { books: books,
+            isAuthenticated: req.isAuthenticated(),
+        });
     }
     else if (action === 'newest') {
         const result = await db.query("SELECT * FROM book INNER JOIN author ON book.author_id = author.id INNER JOIN note ON book.note_id = note.id ORDER BY read_date DESC;");
@@ -76,7 +187,9 @@ app.post("/sort", async(req, res) => {
                  book.read_date = `${month}/${day}/${year}`;
             }
             })
-            res.render("index.ejs", { books: books });
+            res.render("index.ejs", { books: books,
+                isAuthenticated: req.isAuthenticated(),
+            });
     }
     else if (action === 'best') {
         const result = await db.query("SELECT * FROM book INNER JOIN author ON book.author_id = author.id INNER JOIN note ON book.note_id = note.id ORDER BY my_rating DESC;");
@@ -87,7 +200,9 @@ app.post("/sort", async(req, res) => {
                  book.read_date = `${month}/${day}/${year}`;
             }
             })
-            res.render("index.ejs", { books: books });
+            res.render("index.ejs", { books: books,
+                isAuthenticated: req.isAuthenticated(),
+            });
     }
 })
 
@@ -136,6 +251,71 @@ app.post("/add", async(req, res)=> {
     } catch (error) {
         console.log(error);
     }
+})
+
+passport.use(
+    "local",
+    new Strategy({
+        usernameField: 'email',
+        passwordField: 'password'
+    },async function verify(username, password, cb) {
+        try {
+            const result = await db.query("SELECT * FROM users WHERE email = $1", [username]);
+            if (result.rows.length > 0) {
+                const user = result.rows[0];
+                const storedPassword = result.rows[0].password;
+                
+                bcrypt.compare(password, storedPassword, (err, valid) =>{
+                    if (err) {
+                        console.log("Error comparing: " + err);
+                        return cb(err);
+                    } else {
+                        if (valid) {
+                            console.log("Login success");
+                            return cb(null, user);
+                        } else {
+                            console.log("password incorrect");
+                            return cb(null, false);
+                        }
+                    }
+                })
+            } else {
+                return cb(null, false);
+            }
+        } catch (error) {
+            return cb(error);
+        }
+}))
+
+// GoogleStrategy
+passport.use(
+    "google",
+    new GoogleStrategy(
+        {
+    clientID: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    callbackURL: "http://localhost:3000/auth/google/callback",
+    userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo",
+  },
+  async (accessToken, refreshToken, profile, cb) => {
+    console.log(profile);
+    const result = await db.query("SELECT * FROM users WHERE email=$1",[profile.email]);
+    if (result.rows.length === 0) {
+        const newUser = await db.query(
+            "INSERT INTO users(email, password) VALUES ($1, $2)", [profile.email, "google"]
+        );
+        return cb(null, newUser.rows[0]);
+    } else {
+        return cb(null, result.rows[0]);
+    }
+  }
+));
+
+passport.serializeUser((user, cb)=>{
+    cb(null, user);
+})
+passport.deserializeUser((user, cb)=>{
+    cb(null, user);
 })
 // listen
 app.listen(port, (req, res)=> {
